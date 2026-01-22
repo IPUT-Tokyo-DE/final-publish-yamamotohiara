@@ -50,7 +50,7 @@ public class Rock : MonoBehaviour
             if (pInput != null)
             {
                 ScoreManager sm = Object.FindFirstObjectByType<ScoreManager>();
-                if (sm != null) sm.SubtractScore(pInput.playerIndex, 10);
+                if (sm != null) sm.SubtractScore(pInput.playerIndex, 100);
 
                 // 2. スタン処理（2秒間動けなくする）
                 var controller = other.GetComponent<PlayerController>();

@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
-using System.Collections; // コルーチンを使うために追加
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
@@ -14,16 +14,25 @@ public class PlayerController : MonoBehaviour
 
     private ScoreManager scoreManager;
 
+    // ★追加：効果音を鳴らすためのAudioSource
+    private AudioSource soundManagerAudio;
+
     [Header("見た目の制御用")]
     public GameObject visualModel;
 
-    // ★追加：スタン状態のフラグ
     private bool isStunned = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         scoreManager = Object.FindFirstObjectByType<ScoreManager>();
+
+        // ★SoundManagerという名前のオブジェクトからAudioSourceを取得しておく
+        GameObject smObj = GameObject.Find("SoundManager");
+        if (smObj != null)
+        {
+            soundManagerAudio = smObj.GetComponent<AudioSource>();
+        }
 
         int playerIndex = GetComponent<PlayerInput>().playerIndex;
         SetPlayerColor(playerIndex);
@@ -39,21 +48,17 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // ★追加：スタン（動けなくなる）命令
     public void Stun(float duration)
     {
-        if (isStunned) return; // すでにスタン中なら無視
+        if (isStunned) return;
         StartCoroutine(StunRoutine(duration));
     }
 
     private IEnumerator StunRoutine(float duration)
     {
         isStunned = true;
-        inputVector = Vector2.zero; // 入力をリセット
-
-        // スタン中の見た目演出（例：少しグレーにする、または点滅させるなどはお好みで）
+        inputVector = Vector2.zero;
         yield return new WaitForSeconds(duration);
-
         isStunned = false;
     }
 
@@ -69,6 +74,14 @@ public class PlayerController : MonoBehaviour
         }
 
         scoreManager = Object.FindFirstObjectByType<ScoreManager>();
+
+        // ★シーンが切り替わった時も再取得
+        GameObject smObj = GameObject.Find("SoundManager");
+        if (smObj != null)
+        {
+            soundManagerAudio = smObj.GetComponent<AudioSource>();
+        }
+
         UpdateVisibility();
 
         int playerIndex = GetComponent<PlayerInput>().playerIndex;
@@ -99,7 +112,6 @@ public class PlayerController : MonoBehaviour
     void OnMove(InputValue value)
     {
         if (SceneManager.GetActiveScene().name == "Title") return;
-        // ★スタン中は新しい入力を受け付けない
         if (isStunned)
         {
             inputVector = Vector2.zero;
@@ -112,10 +124,9 @@ public class PlayerController : MonoBehaviour
     {
         if (rb == null || rb.isKinematic) return;
 
-        // ★スタン状態なら移動処理をスキップ
         if (isStunned)
         {
-            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0); // 横移動だけ止める
+            rb.linearVelocity = new Vector3(0, rb.linearVelocity.y, 0);
             return;
         }
 
@@ -127,7 +138,6 @@ public class PlayerController : MonoBehaviour
             transform.forward = moveDirection;
         }
 
-        // --- 半径5.5の円形ステージ制限 ---
         float radiusLimit = 5.5f;
         Vector3 currentPos = transform.position;
         Vector2 horizontalPos = new Vector2(currentPos.x, currentPos.z);
@@ -152,12 +162,31 @@ public class PlayerController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Item"))
         {
+            // ★お餅に「ぷにっ」と消える演出がある場合はそちらのメソッドを呼ぶ
+            // もしない場合は、今まで通りここでDestroy
+            Item item = other.gameObject.GetComponent<Item>();
+
             int realIndex = GetComponent<PlayerInput>().playerIndex;
             scoreManager = Object.FindFirstObjectByType<ScoreManager>();
 
             if (scoreManager != null)
             {
-                Destroy(other.gameObject);
+                // ★効果音を鳴らす
+                if (soundManagerAudio != null)
+                {
+                    soundManagerAudio.PlayOneShot(soundManagerAudio.clip);
+                }
+
+                // 演出メソッドがあれば呼び、なければ即消去
+                if (item != null)
+                {
+                    item.CollectAndAnimate(); // ぷにっと消える演出
+                }
+                else
+                {
+                    Destroy(other.gameObject);
+                }
+
                 scoreManager.AddScore(realIndex, 100);
             }
         }
