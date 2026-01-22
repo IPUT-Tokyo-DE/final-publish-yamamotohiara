@@ -29,7 +29,6 @@ motimoti
 
 <img width="687" height="373" alt="スクリーンショット 2026-01-22 203944" src="https://github.com/user-attachments/assets/0a2a436b-4878-46d1-8bf9-53d2c3332cbd" />
 
-![画面イメージ](docs/images/game_image01.png)
 
 2. アピールポイント
 
