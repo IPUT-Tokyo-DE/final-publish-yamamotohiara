@@ -27,7 +27,8 @@ motimoti
 • どうなったら失敗か？
 失敗はないが、お餅の数に応じて順位がつく
 
-<img width="687" height="373" alt="スクリーンショット 2026-01-22 203944" src="https://github.com/user-attachments/assets/0a2a436b-4878-46d1-8bf9-53d2c3332cbd" />
+
+<img width="685" height="402" alt="game_image01" src="https://github.com/user-attachments/assets/9be8ba9a-bfbb-4afd-bef2-d7c2fe308d14" />
 
 
 2. アピールポイント
